@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Create New Server</h4>
+            </div>
+            <div class="card-body position-relative">
+                <div id="loading-overlay" style="display:none;">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">Creating server and downloading files...<br>Please wait.</p>
+                </div>
+                <form action="{{ url_for('create') }}" method="POST" onsubmit="document.getElementById('loading-overlay').style.display='block'">
+                    <!-- Step 1: Name -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Server Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required placeholder="My Awesome Server">
+                    </div>
+
+                    <!-- Step 2: Core -->
+                    <div class="mb-3">
+                        <label for="core" class="form-label">Server Core</label>
+                        <select class="form-select" id="core" name="core" onchange="updateVersions()">
+                            <option value="Vanilla" selected>Vanilla</option>
+                            <option value="Forge">Forge</option>
+                            <option value="Fabric">Fabric</option>
+                        </select>
+                    </div>
+
+                    <!-- Step 3: Version -->
+                    <div class="mb-3">
+                        <label for="version" class="form-label">Minecraft Version</label>
+                        <select class="form-select" id="version" name="version" required>
+                            <option value="" selected disabled>Loading versions...</option>
+                        </select>
+                    </div>
+
+                    <!-- Step 4: RAM -->
+                     <div class="mb-3">
+                        <label for="ram" class="form-label">Allocated RAM (GB)</label>
+                        <input type="number" class="form-control" id="ram" name="ram" value="2" min="1" step="0.5">
+                        <div class="form-text">Amount of memory allocated to the Java process.</div>
+                    </div>
+                    
+                    <!-- Step 5: Path -->
+                     <div class="mb-3">
+                        <label for="path" class="form-label">Server Path (Optional)</label>
+                        <input type="text" class="form-control" id="path" name="path" placeholder="e.g. C:\MyServers\Server1">
+                        <div class="form-text">Leave empty to install next to the application.</div>
+                    </div>
+
+                    <hr>
+
+                    <h5>Initial Setup (Optional)</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="eula" name="eula" checked>
+                        <label class="form-check-label" for="eula">
+                            Automatically accept EULA
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-success">Create Server</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        populateVersions();
+    });
+
+    async function populateVersions() {
+        const select = document.getElementById('version');
+        try {
+            const response = await fetch('https://piston-meta.mojang.com/mc/game/version_manifest.json');
+            const data = await response.json();
+            
+            select.innerHTML = '';
+            
+            // Filter releases only for simplicity in MVP
+            const releases = data.versions.filter(v => v.type === 'release');
+            
+            releases.forEach(v => {
+                const option = document.createElement('option');
+                option.value = v.id;
+                option.textContent = v.id;
+                select.appendChild(option);
+            });
+            
+        } catch (error) {
+            console.error('Failed to load versions', error);
+            select.innerHTML = '<option disabled>Failed to load versions</option>';
+        }
+    }
+    
+    function updateVersions() {
+        // Logic to clear/change version source based on core
+        // For MVP we just use the Mojang manifest for Vanilla
+    }
+</script>
+{% endblock %}

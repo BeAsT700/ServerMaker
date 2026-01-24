@@ -1,0 +1,224 @@
+
+/* Player Stat Cards */
+.player-stat-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1rem;
+    text-align: center;
+    height: 100%;
+    min-height: 140px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+[data-theme="dark"] .player-stat-card {
+    background-color: #2b2b2b;
+    border-color: #3d3d3d;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+[data-theme="light"] .player-stat-card {
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.player-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.player-stat-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.player-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0.25rem 0;
+    line-height: 1.2;
+}
+
+.player-stat-label {
+    font-size: 0.7rem;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.player-sub-info {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-top: auto;
+}
+
+/* Modal Enhancements */
+.player-details-section {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-section-header {
+    padding: 0.75rem 1rem;
+    background-color: rgba(0,0,0,0.03);
+    border-bottom: 1px solid var(--card-border);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+[data-theme="dark"] .player-section-header {
+    background-color: rgba(255,255,255,0.05);
+}
+
+.player-info-list .list-group-item {
+    border-left: none;
+    border-right: none;
+    border-color: var(--card-border);
+    background-color: transparent;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+}
+
+.player-info-list .list-group-item:first-child {
+    border-top: none;
+}
+
+.player-badge {
+    padding: 0.4em 0.8em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 6px;
+}
+
+/* Beautiful Effect Badges */
+.effect-badge {
+    display: inline-flex !important;
+    align-items: center;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    margin: 2px;
+    font-weight: 500;
+}
+
+.effect-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.effect-name {
+    font-weight: 700;
+    margin-right: 0.1rem;
+}
+
+.effect-separator {
+    width: 1px;
+    height: 14px;
+    background-color: currentColor;
+    opacity: 0.3;
+    margin: 0 0.6rem;
+}
+
+.effect-duration {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    opacity: 0.9;
+    letter-spacing: -0.5px;
+}
+
+/* ========================================= */
+/* Dimension & Coordinate Stat Cards         */
+/* ========================================= */
+
+/* Dimension Icon in stat card */
+.dimension-icon-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(86, 171, 47, 0.3);
+}
+
+.dimension-icon-wrapper.overworld {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(86, 171, 47, 0.3);
+}
+
+.dimension-icon-wrapper.nether {
+    background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(203, 45, 62, 0.3);
+}
+
+.dimension-icon-wrapper.the-end {
+    background: linear-gradient(135deg, #2c3e50 0%, #4a00e0 100%);
+    color: #e0b0ff;
+    box-shadow: 0 4px 15px rgba(74, 0, 224, 0.3);
+}
+
+/* Mini coordinate icon badges */
+.coord-icon-mini {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    margin-bottom: 0.25rem;
+}
+
+.coord-x-color {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.coord-y-color {
+    background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(81, 207, 102, 0.3);
+}
+
+.coord-z-color {
+    background: linear-gradient(135deg, #339af0 0%, #228be6 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(51, 154, 240, 0.3);
+}
+
+/* Coordinate card values */
+.player-stat-card .font-monospace {
+    font-family: 'JetBrains Mono', 'Consolas', monospace !important;
+    letter-spacing: -0.5px;
+}
+

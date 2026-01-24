@@ -1,0 +1,569 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar / Info -->
+    <div class="col-md-3 d-flex flex-column">
+        <div class="card mb-3 server-control-card border-0">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <h5 class="card-title fw-bold mb-1 header-gradient">{{ server.name }}</h5>
+                    <div class="badge bg-dark bg-opacity-50 text-light fw-normal border border-secondary border-opacity-25 px-3 py-2 rounded-pill mb-3">
+                        {{ server.core }} {{ server.version }}
+                    </div>
+                    
+                    <div class="d-flex align-items-center justify-content-center gap-2 status-wrapper rounded-3 p-2">
+                        <span class="status-dot {% if status == 'running' %}running{% else %}stopped{% endif %}" id="status-dot"></span>
+                        <span class="text-uppercase fw-bold small tracking-wide" id="status-text" style="color: {% if status == 'running' %}#2ecc71{% else %}#e74c3c{% endif %};">{{ status|title }}</span>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-3">
+                    <button class="btn btn-success" onclick="startServer('{{ server.id }}', true)" id="btn-start" {% if status == 'running' %}disabled{% endif %}>
+                        <i class="fas fa-play me-2"></i>START
+                    </button>
+                    <button class="btn btn-warning" onclick="restartServer('{{ server.id }}')" id="btn-restart" {% if status != 'running' %}disabled{% endif %}>
+                        <i class="fas fa-redo me-2"></i>RESTART
+                    </button>
+                    <button class="btn btn-danger" onclick="stopServer('{{ server.id }}', true)" id="btn-stop" {% if status != 'running' %}disabled{% endif %}>
+                        <i class="fas fa-power-off me-2"></i>STOP
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card overflow-hidden server-details-card shadow-sm mb-3">
+            <div class="card-header fw-bold py-2 bg-transparent border-bottom border-opacity-10"><i class="fas fa-server me-2 text-primary"></i>Details</div>
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    <div class="col-6 p-3 border-end text-center info-box transition-hover" style="border-color: var(--card-border) !important;">
+                        <span class="d-block text-muted small text-uppercase mb-2 fw-bold tracking-wide">Port</span>
+                        <input type="number" id="server-port" class="h3 fw-bold mb-0 text-primary val-font editable-value w-100" value="{{ server.port }}" onchange="scheduleUpdate()" title="Click to edit Port">
+                    </div>
+                    <div class="col-6 p-3 text-center info-box transition-hover">
+                        <span class="d-block text-muted small text-uppercase mb-2 fw-bold tracking-wide">Memory (MB)</span>
+                        <input type="number" id="server-ram" class="h3 fw-bold mb-0 text-info val-font editable-value w-100" value="{{ server.ram }}" onchange="scheduleUpdate()" title="Click to edit RAM">
+                    </div>
+                </div>
+                <!-- Playit.gg removed -->
+
+                <div class="border-top p-3 connection-box position-relative hover-lift" style="border-color: var(--card-border) !important; cursor: pointer;" onclick="copyToClipboard(document.getElementById('public-address-text').innerText, this)" title="Click to copy IP">
+                    <small class="d-block text-muted text-uppercase mb-2 fw-bold small tracking-wide" style="font-size: 0.7rem;">Public Address</small>
+                    <div class="d-flex align-items-center p-2 rounded-3 custom-input-like">
+                        <i class="fas fa-globe text-success me-2 ps-1"></i>
+                        <span id="public-address-text" class="font-monospace fw-bold server-ip-text flex-grow-1 text-center user-select-all" style="font-size: 0.95rem; letter-spacing: 0.5px;">{{ public_ip }}:{{ server.port }}</span>
+                        <i class="far fa-copy text-secondary pe-1 opacity-50"></i>
+                    </div>
+                    <div class="position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center copy-overlay rounded" style="background: rgba(var(--bs-success-rgb), 0.95); opacity: 0; pointer-events: none; transition: 0.2s;">
+                        <span class="text-white fw-bold shadow-sm"><i class="fas fa-check me-2"></i>Copied!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+             <ul class="nav nav-pills nav-fill gap-2 p-1 nav-pills-container rounded flex-grow-1" id="serverTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded fw-bold" id="console-tab" data-bs-toggle="pill" data-bs-target="#console" type="button" role="tab"><i class="fas fa-terminal me-2"></i>Console</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded fw-bold" id="files-tab" data-bs-toggle="pill" data-bs-target="#files" type="button" role="tab" onclick="loadFiles('{{ server.id }}')"><i class="fas fa-folder me-2"></i>Files</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded fw-bold" id="players-tab" data-bs-toggle="pill" data-bs-target="#players" type="button" role="tab" onclick="loadPlayers('{{ server.id }}')"><i class="fas fa-users me-2"></i>Players</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded fw-bold" id="backups-tab" data-bs-toggle="pill" data-bs-target="#backups" type="button" role="tab" onclick="loadBackups('{{ server.id }}')"><i class="fas fa-save me-2"></i>Backups</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded fw-bold" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settings" type="button" role="tab" onclick="loadProperties('{{ server.id }}')"><i class="fas fa-sliders-h me-2"></i>Settings</button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="tab-content" id="serverTabsContent">
+            <!-- Console Tab -->
+            <div class="tab-pane fade show active" id="console" role="tabpanel">
+                <div class="card console-card shadow-sm mb-3 border-0 overflow-hidden">
+                    <div class="card-header console-header border-bottom border-secondary border-opacity-25 py-2">
+                        <small class="font-monospace text-muted"><i class="fas fa-terminal me-2"></i>Server Console</small>
+                    </div>
+                    <div class="console-output p-3" id="console-output">
+                        <span class="text-muted">Connecting to stream...</span>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <div class="d-flex align-items-center justify-content-center border rounded shadow-sm px-3 text-muted" style="background-color: var(--input-bg); border-color: var(--input-border) !important;">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <input type="text" class="form-control rounded shadow-sm" id="console-input" placeholder="Enter command..." onkeydown="handleConsoleInput(event, '{{ server.id }}')" autocomplete="off">
+                    <button class="btn btn-primary rounded shadow-sm px-4" onclick="sendCommand('{{ server.id }}')"><i class="fas fa-paper-plane me-2"></i>Send</button>
+                </div>
+            </div>
+            
+            <!-- Files Tab -->
+            <div class="tab-pane fade" id="files" role="tabpanel">
+                <div class="d-flex justify-content-between mb-2">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb" id="file-breadcrumb">
+                            <li class="breadcrumb-item active">/root</li>
+                        </ol>
+                    </nav>
+                    <div class="d-flex gap-2">
+                         <label class="btn btn-sm btn-upload-file d-inline-flex align-items-center gap-2" for="file-upload" title="Upload Files">
+                            <i class="fas fa-file-upload"></i> Files
+                            <input type="file" id="file-upload" hidden multiple onchange="uploadFiles('{{ server.id }}', this.files)">
+                         </label>
+                         <label class="btn btn-sm btn-upload-folder d-inline-flex align-items-center gap-2" for="folder-upload" title="Upload Folder">
+                            <i class="fas fa-folder-upload"></i> Folder
+                            <input type="file" id="folder-upload" hidden webkitdirectory onchange="uploadFiles('{{ server.id }}', this.files)">
+                         </label>
+                         <button class="btn btn-sm btn-file-refresh" onclick="loadFiles('{{ server.id }}')"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+
+                <div id="drop-zone" class="p-4 text-center border border-2 border-primary border-dashed rounded mb-3 bg-light d-none">
+                     <h4 class="text-primary"><i class="fas fa-cloud-upload-alt"></i> Drop files here to upload</h4>
+                </div>
+
+                <div id="file-table-container">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Size</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="file-list">
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Players Tab -->
+            <div class="tab-pane fade" id="players" role="tabpanel">
+                <div class="card mb-3">
+                     <div class="card-body">
+                         <h6 class="card-title mb-3">Manage Players</h6>
+                         <div class="d-flex gap-2">
+                             <input type="text" class="form-control" id="op-player-input" placeholder="Enter player nickname">
+                             <button class="btn btn-warning text-white text-nowrap" type="button" onclick="opPlayer('{{ server.id }}')">
+                                <i class="fas fa-crown"></i> Make Operator
+                             </button>
+                             <button class="btn btn-success text-nowrap" type="button" onclick="addToWhitelist('{{ server.id }}')">
+                                <i class="fas fa-plus-circle"></i> Add to Whitelist
+                             </button>
+                         </div>
+                     </div>
+                </div>
+
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="loadPlayers('{{ server.id }}')"><i class="fas fa-sync"></i> Refresh List</button>
+                </div>
+                
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>UUID</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="player-list">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Backups Tab -->
+            <div class="tab-pane fade" id="backups" role="tabpanel">
+                <!-- Create & Upload Section -->
+                <div class="card mb-4 border-0 shadow-sm overflow-hidden" style="background: var(--card-bg);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="card-title fw-bold text-uppercase tracking-wide mb-0 text-primary">
+                                <i class="fas fa-cloud-upload-alt me-2"></i>Create & Upload
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-8">
+                                <div class="input-group shadow-sm modern-input-group">
+                                    <span class="input-group-text border-end-0 text-muted"><i class="fas fa-archive"></i></span>
+                                    <input type="text" class="form-control border-start-0 ps-0 py-2" id="backup-name-input" placeholder="Enter backup name (e.g. 'Survival Phase 1')">
+                                    <button class="btn btn-primary px-4 fw-bold" type="button" onclick="createBackup('{{ server.id }}')">
+                                        <i class="fas fa-plus me-2"></i>Create
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="btn btn-outline-dashed w-100 py-2 d-flex align-items-center justify-content-center gap-2" for="backup-upload" style="height: 42px; cursor: pointer;">
+                                    <i class="fas fa-file-upload"></i> <span class="fw-bold">Upload .zip</span>
+                                    <input type="file" id="backup-upload" accept=".zip" hidden onchange="uploadBackup('{{ server.id }}', this.files)">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mt-2 small text-muted ms-1">
+                            <i class="fas fa-info-circle me-1"></i> Creating a backup will save the entire server directory.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing Backups List -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-bottom py-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h6 class="mb-0 fw-bold text-uppercase tracking-wide text-muted" style="font-size: 0.8rem;"><i class="fas fa-history me-2"></i>Backup History</h6>
+                            <button class="btn btn-sm btn-link text-decoration-none p-0 fw-bold" onclick="loadBackups('{{ server.id }}')"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4 py-3" style="width: 45%;">Name</th>
+                                        <th class="py-3">Date Created</th>
+                                        <th class="py-3">Size</th>
+                                        <th class="text-end pe-4 py-3" style="min-width: 140px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="backup-list">
+                                    <!-- Loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-pane fade" id="settings" role="tabpanel">
+                <form id="properties-form">
+                    <div id="properties-container">Loading properties...</div>
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary" onclick="saveProperties('{{ server.id }}')">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Config Update Logic
+    let updateTimeout;
+    function scheduleUpdate() {
+        if(updateTimeout) clearTimeout(updateTimeout);
+        // Visual indicator pending
+        document.getElementById('server-port').style.borderColor = '#ffc107'; // warning yellow
+        document.getElementById('server-ram').style.borderColor = '#ffc107';
+        updateTimeout = setTimeout(() => updateConfig(SERVER_ID), 1000);
+    }
+
+    async function updateConfig(id) {
+        const port = document.getElementById('server-port').value;
+        const ram = document.getElementById('server-ram').value;
+        
+        try {
+            const res = await fetch(`/api/update_config/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ port: port, ram: ram })
+            });
+            const data = await res.json();
+            if(data.success) {
+                // Flash success
+                const successColor = 'rgba(25, 135, 84, 0.5)';
+                document.getElementById('server-port').style.borderColor = successColor;
+                document.getElementById('server-ram').style.borderColor = successColor;
+
+                // Update Public Address Display
+                const publicText = document.getElementById('public-address-text');
+                if(publicText) {
+                    publicText.innerText = `{{ public_ip }}:${port}`;
+                }
+
+                setTimeout(() => {
+                    document.getElementById('server-port').style.borderColor = 'transparent';
+                    document.getElementById('server-ram').style.borderColor = 'transparent';
+                }, 1500);
+            } else {
+                 document.getElementById('server-port').style.borderColor = 'var(--bs-danger)';
+                 document.getElementById('server-ram').style.borderColor = 'var(--bs-danger)';
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    // Init status polling
+    const SERVER_ID = '{{ server.id }}';
+    setInterval(() => checkStatus(SERVER_ID), 3000);
+    setInterval(() => updateConsole(SERVER_ID), 1000);
+
+    // Initial console load
+    updateConsole(SERVER_ID);
+</script>
+
+<!-- Player Details Modal -->
+<div class="modal fade" id="playerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="playerModalTitle">Player Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="playerModalBody">
+        <div class="text-center p-3">
+             <div class="spinner-border text-primary" role="status"></div>
+             <p>Loading player data from NBT files...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- File Editor Modal -->
+<div class="modal fade" id="fileEditorModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" style="height: 90vh;">
+    <div class="modal-content h-100">
+      <div class="modal-header">
+        <h5 class="modal-title" id="fileEditorTitle">Edit File</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0 d-flex flex-column" style="height: 70vh;">
+         <textarea id="fileEditorContent" class="form-control border-0 flex-grow-1" style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; resize: none; border-radius: 0; outline: none; box-shadow: none;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <span id="fileSaveStatus" class="me-auto text-muted small"></span>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="btnSaveFile" onclick="saveCurrentFile()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Teleport Modal -->
+<div class="modal fade" id="teleportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Teleport Player</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         <input type="hidden" id="tp-player-server-id">
+         <input type="hidden" id="tp-player-name">
+         <p class="text-muted">Enter coordinates to teleport <b id="tp-display-name"></b> to:</p>
+         <div class="row g-2">
+             <div class="col-4">
+                 <div class="input-group axis-input-group axis-x">
+                    <span class="input-group-text">X</span>
+                    <input type="number" step="any" class="form-control" id="tp-x" placeholder="0">
+                 </div>
+             </div>
+             <div class="col-4">
+                 <div class="input-group axis-input-group axis-y">
+                    <span class="input-group-text">Y</span>
+                    <input type="number" step="any" class="form-control" id="tp-y" placeholder="0">
+                 </div>
+             </div>
+             <div class="col-4">
+                 <div class="input-group axis-input-group axis-z">
+                    <span class="input-group-text">Z</span>
+                    <input type="number" step="any" class="form-control" id="tp-z" placeholder="0">
+                 </div>
+             </div>
+         </div>
+         <div class="mt-2 text-center text-muted small">- OR -</div>
+         <div class="mt-2">
+            <input type="text" class="form-control" id="tp-target-player" placeholder="Enter another player name">
+         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitTeleport()">Teleport</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Effect Modal -->
+<div class="modal fade" id="effectModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Give Effect</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         <input type="hidden" id="eff-player-server-id">
+         <input type="hidden" id="eff-player-name">
+         
+         <div class="mb-3">
+             <label class="form-label">Effect</label>
+             <select class="form-select" id="eff-type">
+                 <option value="minecraft:speed">Speed</option>
+                 <option value="minecraft:slowness">Slowness</option>
+                 <option value="minecraft:haste">Haste</option>
+                 <option value="minecraft:mining_fatigue">Mining Fatigue</option>
+                 <option value="minecraft:strength">Strength</option>
+                 <option value="minecraft:instant_health">Instant Health</option>
+                 <option value="minecraft:instant_damage">Instant Damage</option>
+                 <option value="minecraft:jump_boost">Jump Boost</option>
+                 <option value="minecraft:nausea">Nausea</option>
+                 <option value="minecraft:regeneration">Regeneration</option>
+                 <option value="minecraft:resistance">Resistance</option>
+                 <option value="minecraft:fire_resistance">Fire Resistance</option>
+                 <option value="minecraft:water_breathing">Water Breathing</option>
+                 <option value="minecraft:invisibility">Invisibility</option>
+                 <option value="minecraft:blindness">Blindness</option>
+                 <option value="minecraft:night_vision">Night Vision</option>
+                 <option value="minecraft:hunger">Hunger</option>
+                 <option value="minecraft:weakness">Weakness</option>
+                 <option value="minecraft:poison">Poison</option>
+                 <option value="minecraft:wither">Wither</option>
+                 <option value="minecraft:health_boost">Health Boost</option>
+                 <option value="minecraft:absorption">Absorption</option>
+                 <option value="minecraft:saturation">Saturation</option>
+                 <option value="minecraft:glowing">Glowing</option>
+                 <option value="minecraft:levitation">Levitation</option>
+                 <option value="minecraft:luck">Luck</option>
+                 <option value="minecraft:unluck">Bad Luck</option>
+                 <option value="minecraft:slow_falling">Slow Falling</option>
+                 <option value="minecraft:conduit_power">Conduit Power</option>
+                 <option value="minecraft:dolphins_grace">Dolphins Grace</option>
+                 <option value="minecraft:bad_omen">Bad Omen</option>
+                 <option value="minecraft:hero_of_the_village">Hero of the Village</option>
+                 <option value="minecraft:clear">CLEAR ALL EFFECTS</option>
+             </select>
+         </div>
+         <div class="row g-3">
+             <div class="col-6">
+                 <label class="form-label small text-muted text-uppercase fw-bold">Duration (s)</label>
+                 <div class="custom-stepper">
+                    <button class="btn-step" type="button" onclick="stepInput('eff-duration', -10)"><i class="fas fa-minus small"></i></button>
+                    <input type="number" id="eff-duration" value="30">
+                    <button class="btn-step" type="button" onclick="stepInput('eff-duration', 10)"><i class="fas fa-plus small"></i></button>
+                 </div>
+             </div>
+             <div class="col-6">
+                 <label class="form-label small text-muted text-uppercase fw-bold">Amplifier</label>
+                 <div class="custom-stepper">
+                    <button class="btn-step" type="button" onclick="stepInput('eff-amp', -1)"><i class="fas fa-minus small"></i></button>
+                    <input type="number" id="eff-amp" value="0">
+                    <button class="btn-step" type="button" onclick="stepInput('eff-amp', 1)"><i class="fas fa-plus small"></i></button>
+                 </div>
+             </div>
+         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitEffect()">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- XP Modal -->
+<div class="modal fade" id="xpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Add Experience</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         <input type="hidden" id="xp-player-server-id">
+         <input type="hidden" id="xp-player-name">
+         
+         <div class="text-center mb-4">
+             <i class="fas fa-bolt text-warning display-4"></i>
+             <p class="text-muted small mt-2">Give experience points or levels to the player.</p>
+         </div>
+
+         <div class="mb-3">
+             <div class="custom-stepper w-100">
+                <button class="btn-step" type="button" onclick="stepInput('xp-amount', -10)"><i class="fas fa-minus small"></i></button>
+                <input type="number" id="xp-amount" value="10" style="font-size: 1.5rem; font-weight: bold; color: var(--text-color);">
+                <button class="btn-step" type="button" onclick="stepInput('xp-amount', 10)"><i class="fas fa-plus small"></i></button>
+             </div>
+         </div>
+         
+         <div class="d-flex justify-content-center gap-2 mb-2">
+             <input type="radio" class="btn-check" name="xp-type" id="xp-type-levels" value="levels" checked>
+             <label class="btn btn-outline-warning flex-fill fw-bold" for="xp-type-levels">Levels (L)</label>
+
+             <input type="radio" class="btn-check" name="xp-type" id="xp-type-points" value="points">
+             <label class="btn btn-outline-success flex-fill fw-bold" for="xp-type-points">Points</label>
+         </div>
+         <div class="form-check text-center mt-3">
+             <input class="form-check-input float-none" type="checkbox" id="xp-sound" checked>
+             <label class="form-check-label small text-muted ms-1" for="xp-sound">Play sound</label>
+         </div>
+
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" onclick="submitXp()">Give XP</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GameMode Modal -->
+<div class="modal fade" id="gamemodeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold"><i class="fas fa-gamepad me-2 text-primary"></i>Switch Game Mode</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-0">
+         <input type="hidden" id="gm-player-server-id">
+         <input type="hidden" id="gm-player-name">
+         
+         <div class="row g-2">
+             <div class="col-6">
+                 <button class="btn btn-outline-success w-100 p-3 h-100 text-start gm-btn" onclick="submitGamemode('survival')">
+                     <i class="fas fa-heart fs-4 mb-2 d-block"></i>
+                     <span class="fw-bold d-block">Survival</span>
+                     <span class="small opacity-75" style="font-size: 0.75rem;">Standard experience</span>
+                 </button>
+             </div>
+             <div class="col-6">
+                 <button class="btn btn-outline-info w-100 p-3 h-100 text-start gm-btn" onclick="submitGamemode('creative')">
+                     <i class="fas fa-cube fs-4 mb-2 d-block"></i>
+                     <span class="fw-bold d-block">Creative</span>
+                     <span class="small opacity-75" style="font-size: 0.75rem;">Unlimited resources</span>
+                 </button>
+             </div>
+             <div class="col-6">
+                 <button class="btn btn-outline-warning w-100 p-3 h-100 text-start gm-btn" onclick="submitGamemode('adventure')">
+                     <i class="fas fa-map fs-4 mb-2 d-block"></i>
+                     <span class="fw-bold d-block">Adventure</span>
+                     <span class="small opacity-75" style="font-size: 0.75rem;">Map exploration</span>
+                 </button>
+             </div>
+             <div class="col-6">
+                 <button class="btn btn-outline-secondary w-100 p-3 h-100 text-start gm-btn" onclick="submitGamemode('spectator')">
+                     <i class="fas fa-eye fs-4 mb-2 d-block"></i>
+                     <span class="fw-bold d-block">Spectator</span>
+                     <span class="small opacity-75" style="font-size: 0.75rem;">Observe only</span>
+                 </button>
+             </div>
+         </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
